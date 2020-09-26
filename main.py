@@ -28,6 +28,7 @@ parser.add_argument('-se_prop', help='Static embedding proportion', type=float, 
 args = parser.parse_args()
 
 dataset = Dataset(args.dataset)
+print("dataset load on memoery..")
 
 params = Params(
     ne=args.ne, 
@@ -42,6 +43,8 @@ params = Params(
 )
 
 trainer = Trainer(dataset, params, args.model)
+print("trainer ready..")
+
 trainer.train()
 
 # validating the trained models. we select the model that has the best validation performance as the fina; model

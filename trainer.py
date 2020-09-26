@@ -26,24 +26,31 @@ class Trainer:
         
     def train(self, early_stop=False):
         self.model.train()
-        
+        print("model tuned as train..")
+
         optimizer = torch.optim.Adam(
             self.model.parameters(), 
             lr=self.params.lr, 
             weight_decay=self.params.reg_lambda
         ) #weight_decay corresponds to L2 regularization
-        
+        print("optimizer ready ..")
+
         loss_f = nn.CrossEntropyLoss()
-        
+        print("loss defined..")
+
         for epoch in range(1, self.params.ne + 1):
             last_batch = False
             total_loss = 0.0
             start = time.time()
-            
+            batch_count = 0
+
             while not last_batch:
                 optimizer.zero_grad()
-                
+                print("optimizer resets its gradients as 0 for new batch learning ..")
+
                 heads, rels, tails, years, months, days = self.dataset.nextBatch(self.params.bsize, neg_ratio=self.params.neg_ratio)
+                # print("learning instances: ", heads, rels, tails, years, months, days)
+
                 last_batch = self.dataset.wasLastBatch()
                 
                 scores = self.model(heads, rels, tails, years, months, days)
@@ -55,13 +62,16 @@ class Trainer:
                 l = torch.zeros(num_examples).long().cpu()
 
                 loss = loss_f(scores_reshaped, l)
+                print(f"loss epoch {epoch} | batch {batch_count}", loss)
                 loss.backward()
                 optimizer.step()
                 total_loss += loss.cpu().item()
-                
+                batch_count += 1
+
             print(time.time() - start)
             print("Loss in iteration " + str(epoch) + ": " + str(total_loss) + "(" + self.model_name + "," + self.dataset.name + ")")
-            
+
+
             if epoch % self.params.save_each == 0:
                 self.saveModel(epoch)
             
@@ -72,5 +82,3 @@ class Trainer:
             os.makedirs(directory)
             
         torch.save(self.model, directory + self.params.str_() + "_" + str(chkpnt) + ".chkpnt")
-        
-    
