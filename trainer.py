@@ -51,7 +51,9 @@ class Trainer:
                 ###Added for softmax####
                 num_examples = int(heads.shape[0] / (1 + self.params.neg_ratio))
                 scores_reshaped = scores.view(num_examples, self.params.neg_ratio+1)
-                l = torch.zeros(num_examples).long().cuda()
+                # l = torch.zeros(num_examples).long().cuda()
+                l = torch.zeros(num_examples).long().cpu()
+
                 loss = loss_f(scores_reshaped, l)
                 loss.backward()
                 optimizer.step()
